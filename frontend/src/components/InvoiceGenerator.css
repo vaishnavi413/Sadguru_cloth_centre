@@ -87,8 +87,8 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     border-bottom: 2px solid #eee;
-    padding-bottom: 20px;
-    margin-bottom: 30px;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .tax-invoice-tag {
@@ -155,8 +155,8 @@ body {
 .invoice-meta-grid, .address-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 30px;
+    gap: 15px;
+    margin-bottom: 15px;
 }
 
 .invoice-meta-grid.dual-col, .address-grid.single-col {
@@ -169,7 +169,7 @@ body {
 
 .meta-col {
     background: #fbfbfb;
-    padding: 15px;
+    padding: 10px;
     border-radius: 4px;
     border: 1px solid #f0f0f0;
 }

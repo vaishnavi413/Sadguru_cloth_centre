@@ -252,8 +252,8 @@ const InvoiceGenerator = () => {
                 <th style={{ width: '40px' }}>Sr.No</th>
                 <th>Item Description</th>
                 <th>HSN</th>
-                <th>Rate/Item</th>
                 <th>Qty</th>
+                <th>Rate/Item</th>
                 <th>Taxable Value</th>
                 <th colSpan="2">Tax Amount ({gstRate}%)</th>
                 <th>Amount</th>
