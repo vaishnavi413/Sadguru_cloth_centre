@@ -148,8 +148,7 @@ const ViewBill = () => {
                 <th>Rate/Item</th>
                 <th>Qty</th>
                 <th>Taxable Value</th>
-                <th>CGST ({bill.gstRate/2}%)</th>
-                <th>SGST ({bill.gstRate/2}%)</th>
+                <th colSpan="2">Tax Amount</th>
                 <th>Amount</th>
               </tr>
             </thead>
@@ -164,8 +163,7 @@ const ViewBill = () => {
                   <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>{item.qty}</td>
                   <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td>₹{(item.amount * (bill.gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td>₹{(item.amount * (bill.gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td colSpan="2">₹{(item.amount * (bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>₹{(item.amount * (1 + bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                 </tr>
               ))}
