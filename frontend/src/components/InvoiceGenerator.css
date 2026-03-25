@@ -1,362 +1,407 @@
-/* General Styles */
+/* Amazon-Style Professional Invoice CSS */
+
+:root {
+    --amz-blue: #232f3e;
+    --amz-orange: #ff9900;
+    --amz-text: #111;
+    --amz-light-bg: #f3f3f3;
+    --border-color: #d5d9d9;
+}
+
 body {
-    font-family: 'Poppins', Arial, sans-serif;
-    background-color: #f8f9fa;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7f7f7;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    color: var(--amz-text);
 }
 
-/* Invoice Container */
-.invoice-container {
-    max-width: 1600px;
-    width: 100%;
-    background: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    border: 1px solid #ddd;
-
-    /* ✅ Auto height so container grows with rows */
-    height: auto;
-    min-height: 100%;
-}
-
-/* Headings */
-h2, h3, h4 {
-    text-align: center;
-    color: #333;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-
-/* Invoice Header */
-.invoice-header {
+.amazon-billing-container {
+    padding: 40px 20px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #007BFF;
-    padding-bottom: 15px;
+    gap: 30px;
 }
 
-.invoice-logo img {
-    max-width: 150px;
-}
-
-.invoice-title {
-    font-size: 30px;
-    color: #007BFF;
-    font-weight: bold;
-}
-
-/* Invoice Details Section */
-.invoice-details {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.invoice-details label {
-    font-weight: 500;
-    font-size: 18px;
-    color: #555;
-}
-
-.invoice-details input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 17px;
-    background: #f9f9f9;
-    transition: border 0.3s ease;
-}
-
-.invoice-details input:focus {
-    border: 1px solid #007BFF;
-    outline: none;
-}
-
-/* Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+/* Control Panel */
+.controls-card {
     background: white;
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: center;
-    font-size: 16px;
-}
-
-th {
-    background: #007BFF;
-    color: white;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-td {
-    background: #f8f9fa;
-}
-
-/* Totals Section */
-.total-section {
-    margin-top: 25px;
-    padding: 15px;
-    background: #f1f1f1;
+    width: 100%;
+    max-width: 900px;
+    padding: 20px 30px;
     border-radius: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
 }
 
-/* Buttons */
-button {
+.controls-card h3 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 2px solid var(--amz-orange);
     display: inline-block;
-    width: auto;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    margin: 5px;
-}
-
-.add-btn {
-    background: #28a745;
-    color: white;
-}
-
-.print-btn {
-    background: #007BFF;
-    color: white;
-}
-
-.pdf-btn {
-    background: #dc3545;
-    color: white;
-}
-
-button:hover {
-    transform: scale(1.05);
-}
-
-/* Summary Section */
-.summary-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-top: 25px;
-    width: 100%;
-    gap: 25px;
-}
-
-/* Bank Details */
-.bank-details {
-    flex: 1;
-    padding: 15px;
-    text-align: left;
-    background: #f9f9f9;
-    border-radius: 8px;
-    font-size: 16px;
-}
-
-/* Signature Section */
-.sign-section {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-top: 30px;
-    font-weight: bold;
-    position: relative;
-}
-
-.receiver-sign, .seller-sign {
-    flex: 1;
-    padding-top: 40px;
-    text-align: center;
-    font-size: 16px;
-    border-top: 2px solid #333;
-}
-
-/* Print Styles */
-@media print {
-    .invoice-container {
-        width: 100%;
-        max-width: 100%;
-        height: auto !important; 
-        width: auto !important;   /* ✅ ensure full height on print */
-        box-shadow: none;
-        margin: auto;
-    }
-
-    table {
-        page-break-inside: auto;   /* ✅ rows won’t split across pages */
-    }
-
-    tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
-
-    button {
-        display: none;
-    }
-}
-
-/* Address Section */
-.address-section {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    padding: 15px;
-    background: #f1f1f1;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    gap: 20px;
-}
-
-/* Address Box */
-.address-box {
-    flex: 1;
-    padding: 15px;
-    background: white;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.address-box h4 {
-    font-size: 18px;
-    color: #007BFF;
-    font-weight: 600;
-    margin-bottom: 10px;
-    border-bottom: 2px solid #007BFF;
     padding-bottom: 5px;
 }
 
-.address-box p {
-    font-size: 16px;
-    color: #555;
-    line-height: 1.6;
-    margin: 5px 0;
+.toolbar {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 15px;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .address-section {
-        flex-direction: column;
-        gap: 10px;
-    }
+.toolbar button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
 }
 
-/* Business Contact & Address */
-.business-info {
-    text-align: left;
-    font-size: 18px;
-    color: #333;
-    font-weight: bold;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    background: #f9f9f9;
-    padding: 10px;
-    border-radius: 5px;
-    border-left: 5px solid #007BFF;
+.amz-btn-primary { background: var(--amz-orange); color: black; }
+.amz-btn-secondary { background: #ffd814; color: black; border: 1px solid #fcd200; }
+.amz-btn-view { background: #e7e9ec; color: black; border: 1px solid #adb1b8; }
+.amz-btn-print { background: var(--amz-blue); color: white; }
+
+.toolbar button:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
 }
 
-/* Bank Details & Receiver’s Signature */
-.bank-signature-container {
+/* The Invoice Itself */
+.amazon-invoice {
+    background: white;
+    width: 100%;
+    max-width: 950px;
+    padding: 60px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.1);
+    min-height: 1200px;
+    display: flex;
+    flex-direction: column;
+}
+
+.amz-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-top: 20px;
-    padding: 15px;
-    background: #f1f1f1;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.tax-invoice-tag {
+    color: #444;
+    font-size: 24px;
+    letter-spacing: 2px;
+    margin: 0 0 20px 0;
+}
+
+.seller-details h1 {
+    font-size: 32px;
+    margin: 0;
+    color: var(--amz-blue);
+    font-weight: 800;
+}
+
+.mfg-subtitle {
+    font-style: italic;
     font-size: 14px;
+    color: #555;
+    margin: 2px 0 8px 0 !important;
 }
 
-.bank-details {
-    flex: 1;
-    text-align: left;
+.contact-grid {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 8px;
+}
+
+.contact-grid p {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--amz-blue);
+}
+
+.multi-address-flex {
+    margin-top: 10px;
+    border-left: 3px solid var(--amz-orange);
+    padding-left: 12px;
+}
+
+.multi-address-flex p {
+    margin: 3px 0;
+    font-size: 12px;
+    color: #444;
+}
+
+.amz-logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.recipient-marking {
+    font-size: 11px;
+    text-transform: uppercase;
     font-weight: bold;
-    line-height: 1.6;
+    color: #999;
+    text-align: right;
 }
 
-.receiver-sign {
-    flex: 1;
+/* Info Grids */
+.invoice-meta-grid, .address-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.invoice-meta-grid.dual-col, .address-grid.single-col {
+    grid-template-columns: 1fr 1fr;
+}
+
+.address-grid.single-col {
+    grid-template-columns: 1fr 2fr; /* Give more space to billing address */
+}
+
+.meta-col {
+    background: #fbfbfb;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+}
+
+.meta-col p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.address-title {
+    font-weight: bold;
+    font-size: 14px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+    margin-bottom: 10px !important;
+}
+
+.address-col textarea {
+    width: 100%;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    color: #666;
+    background: transparent;
+    resize: none;
+}
+
+.address-col input {
+    border: none;
+    border-bottom: 1px dashed #ccc;
+    font-size: 13px;
+    width: 150px;
+}
+
+.inline-input {
+    border: none;
+    background: transparent;
+    color: var(--amz-blue);
+    font-weight: bold;
+    font-family: inherit;
+    width: 130px;
+}
+
+/* Table Design */
+.amz-table-wrapper {
+    margin-bottom: 40px;
+    flex-grow: 1;
+}
+
+.amz-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.amz-table th {
+    background: #f1f3f3;
+    color: #444;
+    padding: 12px 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.amz-table td {
+    padding: 15px 8px;
+    border: 1px solid #eee;
+    font-size: 13px;
+    vertical-align: top;
+}
+
+.item-name-input {
+    width: 100%;
+    border: none;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.hsn-row {
+    font-size: 11px;
+    color: #888;
+}
+
+.hsn-row input {
+    border: none;
+    background: transparent;
+    font-size: 11px;
+    width: 60px;
+}
+
+.amz-table input[type="number"] {
+    width: 60px;
+    border: none;
+    background: #f9f9f9;
+}
+
+/* Totals Styles */
+.totals-summary-row td {
+    border: none;
+    padding: 8px;
+    text-align: right;
+}
+
+.total-label {
+    font-weight: bold;
+    color: #666;
+}
+
+.total-value {
     text-align: right;
     font-weight: bold;
 }
 
-/* Signature Line */
-.signature-line {
-    display: block;
-    margin-top: 10px;
-    width: 150px;
-    border-top: 1px solid #333;
+.grand-total-amz {
+    background: #f3f3f3;
 }
 
-.receiver-signature {
+.grand-total-amz td {
+    padding: 15px 8px;
+    border-top: 2px solid var(--amz-blue);
+    border-bottom: 2px solid var(--amz-blue);
+}
+
+.grand-total-amz .total-label, .grand-total-amz .total-value {
+    font-size: 18px;
+    color: var(--amz-blue);
+}
+
+.amount-words-cell {
+    text-align: left !important;
+    font-size: 12px;
+}
+
+.amount-words-cell p {
+    margin: 5px 0 0 0;
+    font-weight: bold;
+    color: #444;
+}
+
+/* Footer & Signatory */
+.amz-footer {
+    margin-top: auto;
+    padding-top: 40px;
+}
+
+.footer-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    margin-bottom: 40px;
+}
+
+.bank-info-qr {
+    display: flex;
+    gap: 40px;
+}
+
+.card-title {
     font-weight: bold;
-    font-size: 14px;
-    margin-top: 20px;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 10px;
 }
 
-.signature-line {
-    display: inline-block;
-    width: 150px;
-    border-top: 1px solid #333;
-    margin-left: 10px;
+.bank-card p {
+    margin: 2px 0;
+    font-size: 13px;
 }
 
-.for-company {
-    text-align: right;
-    flex-grow: 1;
-    padding-left: 20px; /* Ensures some spacing from the signature */
+.qr-box {
+    width: 80px;
+    height: 80px;
+    background: #eee;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    background-image: repeating-linear-gradient(45deg, #eee, #eee 5px, #fff 5px, #fff 10px);
 }
 
-.address-input {
-    width: 200px; /* Match other input widths */
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    height: 50px; /* Allow space for multiple lines */
-    resize: none; /* Prevent manual resizing */
-    overflow-y: auto; /* Show scrollbar if needed */
-    display: block; /* Ensures proper alignment */
-    line-height: 1.2; /* Adjust line spacing */
-  }
+.qr-card { text-align: center; }
+.qr-card p { font-size: 11px; }
 
-
-  .gst-selection label {
-  margin-right: 15px;
-  cursor: pointer;
-  font-weight: 500;
-  color: #333;
+.signature-box {
+    text-align: center;
 }
 
-.gst-selection input[type="radio"] {
-  margin-right: 5px;
-  accent-color: #ff4c4c;
+.sign-stamp {
+    width: 200px;
+    height: 80px;
+    border-bottom: 1px solid #444;
+    margin: 10px auto;
+}
+
+.auth-sign { font-weight: bold; font-size: 12px; color: #666; }
+
+.terms-notes {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+.terms-notes ol {
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.footer-disclaimer {
+    font-size: 10px;
+    color: #aaa;
+    text-align: center;
+}
+
+/* Delete Button */
+.del-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #999;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.del-btn:hover { background: #fee; border-color: #fcc; color: red; }
+
+@media print {
+    body { background: white; }
+    .amazon-billing-container { padding: 0; }
+    .amazon-invoice { box-shadow: none; border: none; padding: 20px; }
+    .no-print { display: none !important; }
 }

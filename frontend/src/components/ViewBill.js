@@ -1,21 +1,44 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
-import logo from "../assets/shrig.jpeg"; 
+import { useLocation, useNavigate } from "react-router-dom";
+import logo from "../assets/sadguru_logo_new.png";
 import "../components/InvoiceGenerator.css";
 
 const ViewBill = () => {
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
   const { state } = useLocation();
-  const { bill } = state || {};
+  const rawBill = state?.bill || {};
 
-  if (!bill) {
-    return <p>No bill data found.</p>;
+  // Normalize bill data for backward compatibility (maps old keys to new)
+  const normalizedGrandTotal = rawBill.totals?.grandTotal || rawBill.grandTotal || rawBill.totalAmount || rawBill.subtotal || 0;
+  const bill = {
+    ...rawBill,
+    invoiceNo: rawBill.invoiceNo || rawBill.invoiceNumber || "--",
+    clientName: rawBill.clientName || rawBill.customerName || rawBill.client_name || "N/A",
+    clientGST: rawBill.clientGST || rawBill.gstNumber || "N/A",
+    clientAddress: rawBill.clientAddress || rawBill.address || "N/A",
+    invoiceDate: rawBill.invoiceDate || (rawBill.createdAt ? new Date(rawBill.createdAt).toLocaleDateString() : "--"),
+    gstRate: rawBill.gstRate || 5,
+    items: (rawBill.items || []).map(item => ({
+      ...item,
+      particulars: item.particulars || item.description || "--",
+      qty: item.qty || item.quantity || 0,
+      rate: item.rate || 0,
+      amount: item.amount || 0
+    })),
+    totals: (rawBill.totals && Object.keys(rawBill.totals).length > 0) ? rawBill.totals : {
+      taxableAmount: rawBill.taxableAmount || rawBill.subtotal || 0,
+      taxAmount: (rawBill.cgst || 0) + (rawBill.sgst || 0) || rawBill.taxAmount || 0,
+      roundOff: rawBill.roundOff || 0,
+      grandTotal: normalizedGrandTotal,
+    }
+  };
+
+  if (!rawBill.invoiceNo && !rawBill.invoiceNumber) {
+    return <div className="amazon-billing-container"><p>No bill data found.</p><button className="amz-btn-primary" onClick={() => navigate("/")}>Go Home</button></div>;
   }
 
-  // Function to convert number to words (same as in InvoiceGenerator)
   const numberToWords = (num) => {
     if (num === 0) return "Zero Rupees";
-
     const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
       "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
       "Seventeen", "Eighteen", "Nineteen"];
@@ -57,104 +80,157 @@ const ViewBill = () => {
     if (decimalPart > 0) {
       result += " and " + convertBelowHundred(decimalPart) + " Paise";
     }
-    return result;
+    return `INR ${result.trim()} Only.`;
   };
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return "";
-    const date = new Date(dateStr);
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
-  };
+  const totals = bill.totals || { taxableAmount: 0, taxAmount: 0, grandTotal: 0 };
 
   return (
-    <div className="invoice-container">
-      {/* Back Button */}
-      <div style={{ margin: "10px 0" }}>
-        <button
-          onClick={() => navigate("/")} // Change "/" to your homepage route
-          style={{ padding: "8px 16px", cursor: "pointer" }}
-        >
-          ← Back to Homepage
-        </button>
+    <div className="amazon-billing-container">
+      <div className="actions-bar no-print">
+        <button className="amz-btn-primary" onClick={() => navigate("/")}>← Back to Home</button>
+        <button className="amz-btn-print" onClick={() => window.print()}>Print This Bill</button>
       </div>
 
-      <div className="header">
-        <div className="business-info">
-          <img
-            src={logo}
-            alt="Business Logo"
-            style={{ height: "200px", width: "800px", display: "block", margin: "0 auto" }}
-          />
-          <h3>Tax Invoice</h3>
-          <p>Branch: S.No.371, Flat No.20, Unity Park, Somwar Peth, Narpatgiri Chowk, Above HDFC Bank, Pune 411011.</p>
-          <p>E-mail Id: shrigenterprises25@gmail.com</p>
-          <p>Mob: 9850111166</p>
-          <p>GSTIN: 27AJIPG2516N1Z2</p>
+      <div className="amazon-invoice printable">
+        <header className="amz-header">
+          <div className="header-left">
+            <h2 className="tax-invoice-tag">TAX INVOICE</h2>
+            <div className="seller-details">
+              <h1>Sadguru Cloth Center</h1>
+              <p className="mfg-subtitle">Mfg. Of Hospital Garments, Plastic Aprons & Rexine</p>
+              <p><b>GSTIN: 27APKN1685B1ZU</b></p>
+              <div className="contact-grid">
+                <p>Mob.: 9881454802 | Off.: 26351192</p>
+                <p>Mob.: 9021554700 | Res.: 26336215</p>
+              </div>
+              <div className="multi-address-flex">
+                <p><b>Branch:</b> 264, Nana Peth, Near Nana Peth Bhaji Mandai, Pune - 411002.</p>
+                <p><b>Head Office:</b> 617, Rasta Peth, Near Parsi Agyari, Pune - 411011.</p>
+              </div>
+            </div>
+          </div>
+          <div className="header-right">
+            <img src={logo} alt="Sadguru Logo" className="amz-logo" />
+            <p className="recipient-marking">Original for Recipient</p>
+          </div>
+        </header>
+
+        <section className="invoice-meta-grid dual-col">
+          <div className="meta-col">
+            <p><b>Invoice : </b> {bill.invoiceNo}</p>
+            <p><b>Place of Supply:</b> {bill.placeOfSupply}</p>
+          </div>
+          <div className="meta-col">
+            <p><b>Invoice Date:</b> {bill.invoiceDate}</p>
+          </div>
+        </section>
+
+        <section className="address-grid single-col">
+          <div className="address-col">
+            <p className="address-title">Customer Details:</p>
+            <p>{bill.clientName}</p>
+            <p><b>GSTIN:</b> {bill.clientGST}</p>
+          </div>
+          <div className="address-col full-width">
+            <p className="address-title">Billing Address:</p>
+            <p style={{whiteSpace: 'pre-wrap'}}>{bill.clientAddress}</p>
+          </div>
+        </section>
+
+        <div className="amz-table-wrapper">
+          <table className="amz-table">
+            <thead>
+              <tr>
+                <th style={{width: '40px'}}>#</th>
+                <th>Item Description</th>
+                <th>Rate/Item</th>
+                <th>Qty</th>
+                <th>Taxable Value</th>
+                <th colSpan="2">Tax Amount</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bill.items.map((item, index) => (
+                <tr key={item.id}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <p style={{fontWeight: 'bold', margin: '0 0 5px 0'}}>{item.particulars}</p>
+                    <p style={{fontSize: '11px', color: '#888'}}>HSN: {item.hsn || "--"}</p>
+                  </td>
+                  <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>{item.qty}</td>
+                  <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td colSpan="2">₹{(item.amount * (bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (1 + bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">Taxable Amount</td>
+                <td className="total-value" colSpan="3">₹{totals.taxableAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">{bill.gstRate}% GST</td>
+                <td className="total-value" colSpan="3">₹{totals.taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="grand-total-amz">
+                <td colSpan="4" className="amount-words-cell">
+                  <span>Total Amount (in words):</span>
+                  <p>{numberToWords(totals.grandTotal)}</p>
+                </td>
+                <td className="total-label">Total</td>
+                <td className="total-value" colSpan="3">₹{totals.grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
-      </div>
 
-      <div className="invoice-details">
-        <p><b>Invoice No:</b> {bill.invoiceNo}</p>
-        <p><b>Date:</b> {formatDate(bill.invoiceDate)}</p>
-        <p><b>To:</b> {bill.clientName}</p>
-        <p><b>GST No:</b> {bill.clientGST}</p>
-        <p><b>Address:</b> {bill.clientAddress}</p>
-        <p><b>PO Number:</b> {bill.poNumber}</p>
-      </div>
+        <section className="amz-footer">
+          <div className="footer-top">
+            <div className="bank-info-qr">
+              <div className="bank-card">
+                <p className="card-title">Bank Details:</p>
+                <p><b>Bank:</b> Punjab National Bank</p>
+                <p><b>A/C #:</b> 2901002100032112 (Current)</p>
+                <p><b>IFSC:</b> PUNB0290100</p>
+                <p><b>Branch:</b> Nana Peth</p>
+              </div>
+              <div className="qr-card">
+                <p className="card-title">Pay using UPI:</p>
+                <div className="mock-qr">
+                  <div className="qr-box"></div>
+                  <p>Scan to Pay</p>
+                </div>
+              </div>
+            </div>
+            <div className="signature-box">
+              <p>For Sadguru Cloth Center</p>
+              <div className="sign-stamp"></div>
+              <p className="auth-sign">Authorized Signatory</p>
+            </div>
+          </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Sr. No</th>
-            <th>Particulars</th>
-            <th>HSN / SAC</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bill.items.map((item) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td>{item.particulars}</td>
-              <td>{item.hsn}</td>
-              <td>{item.qty}</td>
-              <td>{item.rate}</td>
-              <td>{item.amount.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div className="summary-container">
-        <table>
-          <tbody>
-            <tr><td>Subtotal:</td><td>{bill.totals.subtotal.toFixed(2)}</td></tr>
-            <tr><td>CGST @ 9%:</td><td>{bill.totals.cgst.toFixed(2)}</td></tr>
-            <tr><td>SGST @ 9%:</td><td>{bill.totals.sgst.toFixed(2)}</td></tr>
-            <tr><td><b>Grand Total:</b></td><td><b>{bill.totals.grandTotal.toFixed(2)}</b></td></tr>
-            <tr><td><b>Amount in Words:</b></td><td><b>{numberToWords(bill.totals.grandTotal)}</b></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="bank-details">
-        <p><b>HDFC BANK</b></p>
-        <p>A/C No. & Type: 50200095196440 (Current)</p>
-        <p>Account Name: SHRI G ENTERPRISES</p>
-        <p>Branch: Somwar Peth</p>
-        <p>IFSC: HDFC0005383</p>
-        <div className="receiver-signature">
-          <span>Receiver's Sign: <span className="signature-line"></span></span>
-          <span className="for-company">SHRI G ENTERPRISES</span>
-        </div>
+          <div className="terms-notes">
+            <p><b>Notes:</b> Thank you for your Business!</p>
+            <p><b>Terms and Conditions:</b></p>
+            <ol>
+              <li>Goods once sold cannot be taken back or exchanged.</li>
+              <li>Interest @24% p.a. will be charged for uncleared bills beyond 15 days.</li>
+              <li>Subject to local Jurisdiction.</li>
+            </ol>
+          </div>
+          
+          <p className="footer-disclaimer">This is a digitally signed document generated by SCC Billing System.</p>
+        </section>
       </div>
     </div>
   );
 };
 
 export default ViewBill;
+

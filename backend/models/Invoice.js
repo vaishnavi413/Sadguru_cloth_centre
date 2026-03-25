@@ -1,24 +1,31 @@
 import mongoose from "mongoose";
 
 const InvoiceSchema = new mongoose.Schema({
-    customerName: String,
-    gstNumber: String,
-    address: String,
-    poNumber: String, // Added PO Number field
-    invoiceNumber: Number,
+    invoiceNo: Number,
+    invoiceDate: String,
+    dueDate: String,
+    clientName: String,
+    clientGST: String,
+    clientAddress: String,
+    placeOfSupply: String,
+    gstRate: Number,
     items: [
         {
-            description: String,
-            quantity: Number,
+            particulars: String,
+            hsn: String,
+            qty: Number,
             rate: Number,
             amount: Number,
         },
     ],
-    subtotal: Number,
-    cgst: Number,
-    sgst: Number,
-    grandTotal: Number,
+    totals: {
+        taxableAmount: Number,
+        taxAmount: Number,
+        roundOff: Number,
+        grandTotal: Number,
+    },
+    businessName: String
 }, { timestamps: true });
 
-const Invoice = mongoose.model("Invoice", InvoiceSchema);
+const Invoice = mongoose.model("Invoice", InvoiceSchema, "sadguruClothDB");
 export default Invoice;

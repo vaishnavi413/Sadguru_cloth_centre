@@ -1,79 +1,113 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import "../components/InvoiceGenerator.css";
-import logo from "../assets/shrig.jpeg";
+import logo from "../assets/sadguru_logo_new.png";
+import { createInvoice, fetchInvoices } from "../api/invoiceApi";
 
 const InvoiceGenerator = () => {
   const navigate = useNavigate();
 
-  // Reset invoice number if no bills exist
   useEffect(() => {
-    const savedBills = JSON.parse(localStorage.getItem("bills")) || [];
-    if (savedBills.length === 0) {
-      localStorage.setItem("invoiceNo", "1");
-    }
+    const fetchNextNo = async () => {
+      try {
+        const invoices = await fetchInvoices();
+        if (invoices && invoices.length > 0) {
+          const maxNo = Math.max(...invoices.map(inv => inv.invoiceNo || 0));
+          setInvoiceNo(maxNo + 1);
+        } else {
+          setInvoiceNo(1);
+        }
+      } catch (err) {
+        console.error("Failed to fetch invoices", err);
+      }
+    };
+    fetchNextNo();
   }, []);
 
-  const [invoiceNo, setInvoiceNo] = useState(() => {
-    const savedInvoiceNo = localStorage.getItem("invoiceNo");
-    return savedInvoiceNo ? parseInt(savedInvoiceNo, 10) : 1;
-  });
-
+  const [invoiceNo, setInvoiceNo] = useState(1);
   const [invoiceDate, setInvoiceDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [clientName, setClientName] = useState("");
   const [clientGST, setClientGST] = useState("");
   const [clientAddress, setClientAddress] = useState("");
-  const [poNumber, setPoNumber] = useState("");
-  const [gstRate, setGstRate] = useState(9); // Default GST rate
+  const [placeOfSupply, setPlaceOfSupply] = useState("27-MAHARASHTRA");
+  const [gstRate, setGstRate] = useState(5); 
+
   const [items, setItems] = useState([
-    { id: 1, particulars: "", hsn: "", qty: 0, rate: 0, amount: 0 }
+    { id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }
   ]);
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
-    newItems[index][field] =
-      field === "qty" || field === "rate" ? parseFloat(value) || 0 : value;
-    newItems[index].amount = newItems[index].qty * newItems[index].rate;
+    newItems[index][field] = value;
+    
+    if (field === "qty" || field === "rate") {
+      const q = parseFloat(newItems[index].qty) || 0;
+      const r = parseFloat(newItems[index].rate) || 0;
+      newItems[index].amount = q * r;
+    }
     setItems(newItems);
   };
 
   const addItem = () =>
-    setItems([...items, { id: items.length + 1, particulars: "", hsn: "", qty: 0, rate: 0, amount: 0 }]);
+    setItems([...items, { id: items.length + 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }]);
 
-  const deleteItem = (id) => setItems(items.filter(item => item.id !== id));
-
-  const calculateTotals = () => {
-    const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
-    const cgst = subtotal * (gstRate / 100);
-    const sgst = subtotal * (gstRate / 100);
-    return { subtotal, cgst, sgst, grandTotal: subtotal + cgst + sgst };
+  const deleteItem = (id) => {
+    if (items.length === 1) return; // Prevent deleting the last item
+    const filteredItems = items.filter(item => item.id !== id);
+    const reindexedItems = filteredItems.map((item, index) => ({ ...item, id: index + 1 }));
+    setItems(reindexedItems);
   };
 
-  const saveBill = () => {
+  const calculateTotals = () => {
+    const taxableAmount = items.reduce((sum, item) => sum + item.amount, 0);
+    const taxAmount = taxableAmount * (gstRate / 100);
+    const totalWithoutRound = taxableAmount + taxAmount;
+    const grandTotal = Math.round(totalWithoutRound);
+    const roundOff = (grandTotal - totalWithoutRound);
+    
+    return { taxableAmount, taxAmount, roundOff, grandTotal };
+  };
+
+  const saveBill = async () => {
+    if (!invoiceDate || !clientName) {
+      alert("Please enter Invoice Date and Client Details.");
+      return;
+    }
+    const totals = calculateTotals();
     const billData = {
       invoiceNo,
       invoiceDate,
       clientName,
       clientGST,
       clientAddress,
-      poNumber,
+      placeOfSupply,
       gstRate,
       items,
-      totals: calculateTotals()
+      totals,
+      businessName: "Sadguru Cloth Center"
     };
+    
+    // Save to Local Storage (Backup)
     const savedBills = JSON.parse(localStorage.getItem("bills")) || [];
     savedBills.push(billData);
     localStorage.setItem("bills", JSON.stringify(savedBills));
-    localStorage.setItem("invoiceNo", (invoiceNo + 1).toString());
+    
+    // Save to MongoDB via API
+    try {
+      await createInvoice(billData);
+      alert("Bill saved successfully to MongoDB!");
+    } catch (err) {
+      console.error("API Save failed", err);
+      alert("Bill saved locally, but failed to sync for now.");
+    }
+    
     setInvoiceNo(invoiceNo + 1);
-    setItems([{ id: 1, particulars: "", hsn: "", qty: 0, rate: 0, amount: 0 }]);
+    setItems([{ id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }]);
     setClientName("");
     setClientGST("");
     setClientAddress("");
-    setPoNumber("");
     setInvoiceDate("");
-    setGstRate(9);
-    alert("Bill saved successfully!");
   };
 
   const numberToWords = (num) => {
@@ -119,154 +153,205 @@ const InvoiceGenerator = () => {
     if (decimalPart > 0) {
       result += " and " + convertBelowHundred(decimalPart) + " Paise";
     }
-    return result;
+    return `INR ${result.trim()} Only.`;
   };
 
+  const totals = calculateTotals();
+
   return (
-    <div className="invoice-container">
-      <div className="header">
-        <div className="business-info">
-          <img src={logo} alt="Business Logo" style={{ height: "200px", width: "800px", display: "block", margin: "0 auto" }} />
-          <h3>Tax Invoice</h3>
-          <p>Branch: S.No.371, Flat No.20, Unity Park, Somwar Peth, Narpatgiri Chowk,Above HDFC Bank,Pune 411011.</p>
-          <p>E-mail Id:- shrigenterprises25@gmail.com</p>
-          <p>Mob: 9850111166</p>
-          <p>GSTIN: 27AJIPG2516N1Z2</p>
+    <div className="amazon-billing-container">
+      <div className="no-print controls-card">
+        <h3>Invoice Controls</h3>
+        <div className="toolbar">
+          <button className="amz-btn-primary" onClick={addItem}>+ Add Item</button>
+          <button className="amz-btn-secondary" onClick={saveBill}>Save & Sync</button>
+          <button className="amz-btn-view" onClick={() => navigate("/previous-bills")}>View History</button>
+          <button className="amz-btn-print" onClick={() => window.print()}>Print Invoice</button>
         </div>
       </div>
 
-      <div className="invoice-details">
-        <label>Invoice No: {invoiceNo}</label>
-        <label>
-          To:
-          <textarea
-            value={clientName}
-            onChange={(e) => setClientName(e.target.value)}
-            rows={2}
-            style={{ width: "100%" }}
-          />
-        </label>
-        <label>
-          GST No:
-          <input
-            type="text"
-            value={clientGST}
-            onChange={(e) => setClientGST(e.target.value.toUpperCase())}
-            pattern="^([0-3][0-9])[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$"
-            title="Enter a valid GSTIN (15 characters)"
-            maxLength="15"
-            required
-          />
-        </label>
-        <label>
-          Address:
-          <textarea
-            value={clientAddress}
-            onChange={(e) => setClientAddress(e.target.value)}
-            className="address-input"
-          />
-        </label>
-        <label>
-          PO Number:
-          <input
-            type="text"
-            value={poNumber}
-            onChange={(e) => setPoNumber(e.target.value)}
-          />
-        </label>
-        <label>
-          Date:
-          <input
-            type="date"
-            value={invoiceDate}
-            onChange={(e) => setInvoiceDate(e.target.value)}
-            min="2025-04-01"
-            max="2026-03-31"
-            required
-          />
-        </label>
+      <div className="amazon-invoice">
+        <header className="amz-header">
+          <div className="header-left">
+            <h2 className="tax-invoice-tag">TAX INVOICE</h2>
+            <div className="seller-details">
+              <h1>Sadguru Cloth Center</h1>
+              <p className="mfg-subtitle">Mfg. Of Hospital Garments, Plastic Aprons & Rexine</p>
+              <p><b>GSTIN: 27APKN1685B1ZU</b></p>
+              <div className="contact-grid">
+                <p>Mob.: 9881454802 | Off.: 26351192</p>
+                <p>Mob.: 9021554700 | Res.: 26336215</p>
+              </div>
+              <div className="multi-address-flex">
+                <p><b>Branch:</b> 264, Nana Peth, Near Nana Peth Bhaji Mandai, Pune - 411002.</p>
+                <p><b>Head Office:</b> 617, Rasta Peth, Near Parsi Agyari, Pune - 411011.</p>
+              </div>
+            </div>
+          </div>
+          <div className="header-right">
+            <img src={logo} alt="Sadguru Logo" className="amz-logo" />
+            <p className="recipient-marking">Original for Recipient</p>
+          </div>
+        </header>
 
- <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-  <b>Select GST Rate:</b>
-  <label style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-    <input
-      type="radio"
-      name="gstRate"
-      value={5}
-      checked={gstRate === 5}
-      onChange={() => setGstRate(5)}
-    /> 
-    5%
-  </label>
-  <span>OR</span>
-  <label style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-    <input
-      type="radio"
-      name="gstRate"
-      value={9}
-      checked={gstRate === 9}
-      onChange={() => setGstRate(9)}
-    /> 
-    9%
-  </label>
-</div>
+        <section className="invoice-meta-grid dual-col">
+          <div className="meta-col">
+            <p><b>Invoice : </b> {invoiceNo}</p>
+            <p><b>Place of Supply:</b> 
+              <input 
+                type="text" 
+                value={placeOfSupply} 
+                onChange={(e) => setPlaceOfSupply(e.target.value)}
+                className="inline-input"
+              />
+            </p>
+          </div>
+          <div className="meta-col">
+            <p><b>Invoice Date:</b> 
+              <input 
+                type="date" 
+                value={invoiceDate} 
+                onChange={(e) => setInvoiceDate(e.target.value)} 
+                min="2026-04-01"
+                max="2027-03-31"
+                className="inline-input"
+              />
+            </p>
+          </div>
+        </section>
 
+        <section className="address-grid single-col">
+          <div className="address-col">
+            <p className="address-title">Customer Details:</p>
+            <textarea 
+              value={clientName} 
+              onChange={(e) => setClientName(e.target.value)}
+              placeholder="Full Customer Name"
+              rows={2}
+            />
+            <p><b>GSTIN:</b> 
+              <input type="text" value={clientGST} onChange={(e) => setClientGST(e.target.value)} placeholder="Customer GST" />
+            </p>
+          </div>
+          <div className="address-col full-width">
+            <p className="address-title">Billing Address:</p>
+            <textarea 
+              value={clientAddress} 
+              onChange={(e) => setClientAddress(e.target.value)}
+              placeholder="Complete Billing Address"
+              rows={4}
+            />
+          </div>
+        </section>
 
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Sr. No</th>
-            <th>Particulars</th>
-            <th>HSN / SAC</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item, index) => (
-            <tr key={item.id}>
-              <td>{item.id}</td>
-              <td><input type="text" value={item.particulars} onChange={(e) => handleItemChange(index, "particulars", e.target.value)} /></td>
-              <td><input type="text" value={item.hsn} onChange={(e) => handleItemChange(index, "hsn", e.target.value)} /></td>
-              <td><input type="number" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} /></td>
-              <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
-              <td>{item.amount.toFixed(2)}</td>
-              <td><button onClick={() => deleteItem(item.id)}>Delete</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <button onClick={addItem}>Add Item</button>
-      <button onClick={saveBill}>Save Bill</button>
-      <button onClick={() => navigate("/previous-bills")}>Show Previous Bills</button>
-
-      <div className="summary-container">
-        <table>
-          <tbody>
-            <tr><td>Subtotal:</td><td>{calculateTotals().subtotal.toFixed(2)}</td></tr>
-            <tr><td>CGST @{gstRate}%:</td><td>{calculateTotals().cgst.toFixed(2)}</td></tr>
-            <tr><td>SGST @{gstRate}%:</td><td>{calculateTotals().sgst.toFixed(2)}</td></tr>
-            <tr><td><b>Grand Total:</b></td><td><b>{calculateTotals().grandTotal.toFixed(2)}</b></td></tr>
-            <tr><td><b>Amount in Words:</b></td><td><b>{numberToWords(calculateTotals().grandTotal)}</b></td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="bank-details">
-        <p><b>HDFC BANK</b></p>
-        <p>A/C No. & Type: 50200095196440 (Current)</p>
-        <p>Account Name: SHRI G ENTERPRISES</p>
-        <p>Branch: Somwar Peth</p>
-        <p>IFSC: HDFC0005383</p>
-        <div className="receiver-signature">
-          <span>Receiver's Sign: <span className="signature-line"></span></span>
-          <span className="for-company">SHRI G ENTERPRISES</span>
+        <div className="amz-table-wrapper">
+          <table className="amz-table">
+            <thead>
+              <tr>
+                <th style={{width: '40px'}}>#</th>
+                <th>Item Description</th>
+                <th>Rate/Item</th>
+                <th>Qty</th>
+                <th>Taxable Value</th>
+                <th colSpan="2">Tax Amount ({gstRate}%)</th>
+                <th>Amount</th>
+                <th className="no-print">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item, index) => (
+                <tr key={item.id}>
+                  <td>{index + 1}</td>
+                  <td>
+                    <input 
+                      type="text" 
+                      className="item-name-input" 
+                      value={item.particulars} 
+                      onChange={(e) => handleItemChange(index, "particulars", e.target.value)} 
+                      placeholder="Item Name" 
+                    />
+                    <div className="hsn-row">
+                      <label>HSN: </label>
+                      <input 
+                        type="text" 
+                        value={item.hsn} 
+                        onChange={(e) => handleItemChange(index, "hsn", e.target.value)} 
+                        placeholder="8517"
+                      />
+                    </div>
+                  </td>
+                  <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
+                  <td><input type="number" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} /></td>
+                  <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td colSpan="2">₹{(item.amount * (gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (1 + gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td className="no-print">
+                    <button className="del-btn" onClick={() => deleteItem(item.id)}>×</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">Taxable Amount</td>
+                <td className="total-value" colSpan="3">₹{totals.taxableAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">{gstRate}% GST</td>
+                <td className="total-value" colSpan="3">₹{totals.taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="grand-total-amz">
+                <td colSpan="4" className="amount-words-cell">
+                  <span>Total Amount (in words):</span>
+                  <p>{numberToWords(totals.grandTotal)}</p>
+                </td>
+                <td className="total-label">Total</td>
+                <td className="total-value" colSpan="3">₹{totals.grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
+
+        <section className="amz-footer">
+          <div className="footer-top">
+            <div className="bank-info-qr">
+              <div className="bank-card">
+                <p className="card-title">Bank Details:</p>
+                <p><b>Bank:</b> Punjab National Bank</p>
+                <p><b>A/C #:</b> 2901002100032112 (Current)</p>
+                <p><b>IFSC:</b> PUNB0290100</p>
+                <p><b>Branch:</b> Nana Peth</p>
+              </div>
+              <div className="qr-card">
+                <p className="card-title">Pay using UPI:</p>
+                <div className="mock-qr">
+                  {/* Mock QR using CSS */}
+                  <div className="qr-box"></div>
+                  <p>Scan to Pay</p>
+                </div>
+              </div>
+            </div>
+            <div className="signature-box">
+              <p>For Sadguru Cloth Center</p>
+              <div className="sign-stamp"></div>
+              <p className="auth-sign">Authorized Signatory</p>
+            </div>
+          </div>
+
+          <div className="terms-notes">
+            <p><b>Notes:</b> Thank you for your Business!</p>
+            <p><b>Terms and Conditions:</b></p>
+            <ol>
+              <li>Goods once sold cannot be taken back or exchanged.</li>
+              <li>Interest @24% p.a. will be charged for uncleared bills beyond 30 days.</li>
+              <li>Subject to local Jurisdiction.</li>
+            </ol>
+          </div>
+          
+          <p className="footer-disclaimer">This is a digitally signed document generated by Vaishanvi Enterprises (+91 9767216218) Billing System.</p>
+        </section>
       </div>
     </div>
   );

@@ -9,8 +9,7 @@ const getNextInvoiceNumber = async () => {
 // Create Invoice
 export const createInvoice = async (req, res) => {
   try {
-    const invoiceNumber = await getNextInvoiceNumber();
-    const invoice = new Invoice({ ...req.body, invoiceNumber });
+    const invoice = new Invoice(req.body);
     await invoice.save();
     res.status(201).json(invoice);
   } catch (error) {
@@ -42,4 +41,18 @@ export const getInvoiceByCustomer = async (req, res) => {
 // Generate Invoice PDF (Placeholder)
 export const downloadInvoicePDF = async (req, res) => {
   res.json({ message: "PDF generation will be implemented here" });
+};
+
+// Delete Invoice
+export const deleteInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedInvoice = await Invoice.findByIdAndDelete(id);
+    if (!deletedInvoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+    res.json({ message: "Invoice deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };

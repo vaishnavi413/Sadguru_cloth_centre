@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://invoice-bill-generator-backend.onrender.com"; // Backend API URL
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8080/api/invoices"; // Local API URL for development
 
 export const fetchInvoices = async () => {
   try {
@@ -19,5 +19,15 @@ export const createInvoice = async (invoiceData) => {
     return response.data;
   } catch (error) {
     console.error("Error creating invoice:", error);
+  }
+};
+
+export const deleteInvoice = async (id) => {
+  try {
+    const response = await axios.delete(`${API_URL}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting invoice:", error);
+    throw error;
   }
 };
