@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import "../components/InvoiceGenerator.css";
 import logo from "../assets/sadguru_logo_new.png";
+import qrCode from "../assets/qr_code.jpg";
 import { createInvoice, fetchInvoices } from "../api/invoiceApi";
 
 const InvoiceGenerator = () => {
@@ -253,7 +254,8 @@ const InvoiceGenerator = () => {
                 <th>Rate/Item</th>
                 <th>Qty</th>
                 <th>Taxable Value</th>
-                <th colSpan="2">Tax Amount ({gstRate}%)</th>
+                <th>CGST ({gstRate/2}%)</th>
+                <th>SGST ({gstRate/2}%)</th>
                 <th>Amount</th>
                 <th className="no-print">Action</th>
               </tr>
@@ -283,7 +285,8 @@ const InvoiceGenerator = () => {
                   <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
                   <td><input type="number" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} /></td>
                   <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td colSpan="2">₹{(item.amount * (gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>₹{(item.amount * (1 + gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td className="no-print">
                     <button className="del-btn" onClick={() => deleteItem(item.id)}>×</button>
@@ -299,8 +302,13 @@ const InvoiceGenerator = () => {
               </tr>
               <tr className="totals-summary-row">
                 <td colSpan="4"></td>
-                <td className="total-label">{gstRate}% GST</td>
-                <td className="total-value" colSpan="3">₹{totals.taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td className="total-label">CGST ({gstRate/2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">SGST ({gstRate/2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="grand-total-amz">
                 <td colSpan="4" className="amount-words-cell">
@@ -319,6 +327,7 @@ const InvoiceGenerator = () => {
             <div className="bank-info-qr">
               <div className="bank-card">
                 <p className="card-title">Bank Details:</p>
+                <p><b>Account Name:</b> SADGURU CLOTH CENTER AND TAILOR</p>
                 <p><b>Bank:</b> Punjab National Bank</p>
                 <p><b>A/C #:</b> 2901002100032112 (Current)</p>
                 <p><b>IFSC:</b> PUNB0290100</p>
@@ -327,9 +336,7 @@ const InvoiceGenerator = () => {
               <div className="qr-card">
                 <p className="card-title">Pay using UPI:</p>
                 <div className="mock-qr">
-                  {/* Mock QR using CSS */}
-                  <div className="qr-box"></div>
-                  <p>Scan to Pay</p>
+                  <img src={qrCode} alt="UPI QR Code" style={{ width: "95px", height: "95px", objectFit: "contain" }} />
                 </div>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/sadguru_logo_new.png";
+import qrCode from "../assets/qr_code.jpg";
 import "../components/InvoiceGenerator.css";
 
 const ViewBill = () => {
@@ -147,7 +148,8 @@ const ViewBill = () => {
                 <th>Rate/Item</th>
                 <th>Qty</th>
                 <th>Taxable Value</th>
-                <th colSpan="2">Tax Amount</th>
+                <th>CGST ({bill.gstRate/2}%)</th>
+                <th>SGST ({bill.gstRate/2}%)</th>
                 <th>Amount</th>
               </tr>
             </thead>
@@ -162,7 +164,8 @@ const ViewBill = () => {
                   <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>{item.qty}</td>
                   <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td colSpan="2">₹{(item.amount * (bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (bill.gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{(item.amount * (bill.gstRate / 200)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>₹{(item.amount * (1 + bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                 </tr>
               ))}
@@ -175,8 +178,13 @@ const ViewBill = () => {
               </tr>
               <tr className="totals-summary-row">
                 <td colSpan="4"></td>
-                <td className="total-label">{bill.gstRate}% GST</td>
-                <td className="total-value" colSpan="3">₹{totals.taxAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td className="total-label">CGST ({bill.gstRate/2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+              </tr>
+              <tr className="totals-summary-row">
+                <td colSpan="4"></td>
+                <td className="total-label">SGST ({bill.gstRate/2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="grand-total-amz">
                 <td colSpan="4" className="amount-words-cell">
@@ -195,6 +203,7 @@ const ViewBill = () => {
             <div className="bank-info-qr">
               <div className="bank-card">
                 <p className="card-title">Bank Details:</p>
+                <p><b>Account Name:</b> SADGURU CLOTH CENTER AND TAILOR</p>
                 <p><b>Bank:</b> Punjab National Bank</p>
                 <p><b>A/C #:</b> 2901002100032112 (Current)</p>
                 <p><b>IFSC:</b> PUNB0290100</p>
@@ -203,8 +212,7 @@ const ViewBill = () => {
               <div className="qr-card">
                 <p className="card-title">Pay using UPI:</p>
                 <div className="mock-qr">
-                  <div className="qr-box"></div>
-                  <p>Scan to Pay</p>
+                  <img src={qrCode} alt="UPI QR Code" style={{ width: "95px", height: "95px", objectFit: "contain" }} />
                 </div>
               </div>
             </div>
