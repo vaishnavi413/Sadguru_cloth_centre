@@ -145,6 +145,7 @@ const ViewBill = () => {
               <tr>
                 <th style={{width: '40px'}}>#</th>
                 <th>Item Description</th>
+                <th>HSN</th>
                 <th>Rate/Item</th>
                 <th>Qty</th>
                 <th>Taxable Value</th>
@@ -158,8 +159,8 @@ const ViewBill = () => {
                   <td>{index + 1}</td>
                   <td>
                     <p style={{fontWeight: 'bold', margin: '0 0 5px 0'}}>{item.particulars}</p>
-                    <p style={{fontSize: '11px', color: '#888'}}>HSN: {item.hsn || "--"}</p>
                   </td>
+                  <td>{item.hsn || "--"}</td>
                   <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>{item.qty}</td>
                   <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
@@ -170,22 +171,22 @@ const ViewBill = () => {
             </tbody>
             <tfoot>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
+                <td colSpan="5"></td>
                 <td className="total-label">Taxable Amount</td>
                 <td className="total-value" colSpan="3">₹{totals.taxableAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
+                <td colSpan="5"></td>
                 <td className="total-label">CGST ({bill.gstRate/2}%)</td>
                 <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
+                <td colSpan="5"></td>
                 <td className="total-label">SGST ({bill.gstRate/2}%)</td>
                 <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
               </tr>
               <tr className="grand-total-amz">
-                <td colSpan="4" className="amount-words-cell">
+                <td colSpan="5" className="amount-words-cell">
                   <span>Total Amount (in words):</span>
                   <p>{numberToWords(totals.grandTotal)}</p>
                 </td>

@@ -32,7 +32,7 @@ const InvoiceGenerator = () => {
   const [clientGST, setClientGST] = useState("");
   const [clientAddress, setClientAddress] = useState("");
   const [placeOfSupply, setPlaceOfSupply] = useState("27-MAHARASHTRA");
-  const [gstRate, setGstRate] = useState(5); 
+  const [gstRate, setGstRate] = useState(5);
 
   const [items, setItems] = useState([
     { id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }
@@ -41,7 +41,7 @@ const InvoiceGenerator = () => {
   const handleItemChange = (index, field, value) => {
     const newItems = [...items];
     newItems[index][field] = value;
-    
+
     if (field === "qty" || field === "rate") {
       const q = parseFloat(newItems[index].qty) || 0;
       const r = parseFloat(newItems[index].rate) || 0;
@@ -66,7 +66,7 @@ const InvoiceGenerator = () => {
     const totalWithoutRound = taxableAmount + taxAmount;
     const grandTotal = Math.round(totalWithoutRound);
     const roundOff = (grandTotal - totalWithoutRound);
-    
+
     return { taxableAmount, taxAmount, roundOff, grandTotal };
   };
 
@@ -88,12 +88,12 @@ const InvoiceGenerator = () => {
       totals,
       businessName: "Sadguru Cloth Center"
     };
-    
+
     // Save to Local Storage (Backup)
     const savedBills = JSON.parse(localStorage.getItem("bills")) || [];
     savedBills.push(billData);
     localStorage.setItem("bills", JSON.stringify(savedBills));
-    
+
     // Save to MongoDB via API
     try {
       await createInvoice(billData);
@@ -102,7 +102,7 @@ const InvoiceGenerator = () => {
       console.error("API Save failed", err);
       alert("Bill saved locally, but failed to sync for now.");
     }
-    
+
     setInvoiceNo(invoiceNo + 1);
     setItems([{ id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }]);
     setClientName("");
@@ -198,21 +198,21 @@ const InvoiceGenerator = () => {
         <section className="invoice-meta-grid dual-col">
           <div className="meta-col">
             <p><b>Invoice : </b> {invoiceNo}</p>
-            <p><b>Place of Supply:</b> 
-              <input 
-                type="text" 
-                value={placeOfSupply} 
+            <p><b>Place of Supply:</b>
+              <input
+                type="text"
+                value={placeOfSupply}
                 onChange={(e) => setPlaceOfSupply(e.target.value)}
                 className="inline-input"
               />
             </p>
           </div>
           <div className="meta-col">
-            <p><b>Invoice Date:</b> 
-              <input 
-                type="date" 
-                value={invoiceDate} 
-                onChange={(e) => setInvoiceDate(e.target.value)} 
+            <p><b>Invoice Date:</b>
+              <input
+                type="date"
+                value={invoiceDate}
+                onChange={(e) => setInvoiceDate(e.target.value)}
                 min="2026-04-01"
                 max="2027-03-31"
                 className="inline-input"
@@ -224,20 +224,20 @@ const InvoiceGenerator = () => {
         <section className="address-grid single-col">
           <div className="address-col">
             <p className="address-title">Customer Details:</p>
-            <textarea 
-              value={clientName} 
+            <textarea
+              value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               placeholder="Full Customer Name"
               rows={2}
             />
-            <p><b>GSTIN:</b> 
+            <p><b>GSTIN:</b>
               <input type="text" value={clientGST} onChange={(e) => setClientGST(e.target.value)} placeholder="Customer GST" />
             </p>
           </div>
           <div className="address-col full-width">
             <p className="address-title">Billing Address:</p>
-            <textarea 
-              value={clientAddress} 
+            <textarea
+              value={clientAddress}
               onChange={(e) => setClientAddress(e.target.value)}
               placeholder="Complete Billing Address"
               rows={4}
@@ -249,8 +249,9 @@ const InvoiceGenerator = () => {
           <table className="amz-table">
             <thead>
               <tr>
-                <th style={{width: '40px'}}>#</th>
+                <th style={{ width: '40px' }}>Sr.No</th>
                 <th>Item Description</th>
+                <th>HSN</th>
                 <th>Rate/Item</th>
                 <th>Qty</th>
                 <th>Taxable Value</th>
@@ -264,28 +265,28 @@ const InvoiceGenerator = () => {
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>
-                    <input 
-                      type="text" 
-                      className="item-name-input" 
-                      value={item.particulars} 
-                      onChange={(e) => handleItemChange(index, "particulars", e.target.value)} 
-                      placeholder="Item Name" 
+                    <input
+                      type="text"
+                      className="item-name-input"
+                      value={item.particulars}
+                      onChange={(e) => handleItemChange(index, "particulars", e.target.value)}
+                      placeholder="Item Name"
                     />
-                    <div className="hsn-row">
-                      <label>HSN: </label>
-                      <input 
-                        type="text" 
-                        value={item.hsn} 
-                        onChange={(e) => handleItemChange(index, "hsn", e.target.value)} 
-                        placeholder="8517"
-                      />
-                    </div>
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      value={item.hsn}
+                      onChange={(e) => handleItemChange(index, "hsn", e.target.value)}
+                      placeholder="8517"
+                      style={{ width: '50px', border: 'none', background: 'transparent', fontSize: '12px' }}
+                    />
                   </td>
                   <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
                   <td><input type="number" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} /></td>
-                  <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td colSpan="2">₹{(item.amount * (gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
-                  <td>₹{(item.amount * (1 + gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                  <td>₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td colSpan="2">₹{(item.amount * (gstRate / 100)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td>₹{(item.amount * (1 + gstRate / 100)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                   <td className="no-print">
                     <button className="del-btn" onClick={() => deleteItem(item.id)}>×</button>
                   </td>
@@ -294,27 +295,27 @@ const InvoiceGenerator = () => {
             </tbody>
             <tfoot>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
+                <td colSpan="5"></td>
                 <td className="total-label">Taxable Amount</td>
-                <td className="total-value" colSpan="3">₹{totals.taxableAmount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td className="total-value" colSpan="3">₹{totals.taxableAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
-                <td className="total-label">CGST ({gstRate/2}%)</td>
-                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td colSpan="5"></td>
+                <td className="total-label">CGST ({gstRate / 2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="totals-summary-row">
-                <td colSpan="4"></td>
-                <td className="total-label">SGST ({gstRate/2}%)</td>
-                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td colSpan="5"></td>
+                <td className="total-label">SGST ({gstRate / 2}%)</td>
+                <td className="total-value" colSpan="3">₹{(totals.taxAmount / 2).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
               </tr>
               <tr className="grand-total-amz">
-                <td colSpan="4" className="amount-words-cell">
+                <td colSpan="5" className="amount-words-cell">
                   <span>Total Amount (in words):</span>
                   <p>{numberToWords(totals.grandTotal)}</p>
                 </td>
                 <td className="total-label">Total</td>
-                <td className="total-value" colSpan="3">₹{totals.grandTotal.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
+                <td className="total-value" colSpan="3">₹{totals.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
               </tr>
             </tfoot>
           </table>
@@ -354,7 +355,7 @@ const InvoiceGenerator = () => {
               <li>Subject to local Jurisdiction.</li>
             </ol>
           </div>
-          
+
           <p className="footer-disclaimer">This is a digitally signed document generated by Vaishanvi Enterprises (+91 9767216218) Billing System.</p>
         </section>
       </div>
