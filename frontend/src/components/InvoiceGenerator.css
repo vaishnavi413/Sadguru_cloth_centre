@@ -228,7 +228,7 @@ body {
 .amz-table th {
     background: #f1f3f3;
     color: #444;
-    padding: 12px 8px;
+    padding: 8px 6px;
     font-size: 12px;
     text-transform: uppercase;
     font-weight: bold;
@@ -237,18 +237,19 @@ body {
 }
 
 .amz-table td {
-    padding: 15px 8px;
+    padding: 6px 6px;
     border: 1px solid #eee;
     font-size: 13px;
-    vertical-align: top;
+    vertical-align: middle;
 }
 
 .item-name-input {
     width: 100%;
     border: none;
     font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 5px;
+    font-size: 13px;
+    margin-bottom: 2px;
+    padding: 2px 0;
 }
 
 .hsn-row {
