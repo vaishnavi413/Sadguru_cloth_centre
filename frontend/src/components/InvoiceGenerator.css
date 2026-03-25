@@ -216,8 +216,7 @@ body {
 
 /* Table Design */
 .amz-table-wrapper {
-    margin-bottom: 40px;
-    flex-grow: 1;
+    margin-bottom: 20px;
 }
 
 .amz-table {
@@ -315,8 +314,7 @@ body {
 
 /* Footer & Signatory */
 .amz-footer {
-    margin-top: auto;
-    padding-top: 40px;
+    padding-top: 20px;
 }
 
 .footer-top {
