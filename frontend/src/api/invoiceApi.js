@@ -32,3 +32,13 @@ export const deleteInvoice = async (id) => {
     throw error;
   }
 };
+
+export const updateInvoice = async (id, invoiceData) => {
+  try {
+    const response = await axios.put(`${API_URL}/${id}`, invoiceData);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating invoice:", error);
+    throw error;
+  }
+};

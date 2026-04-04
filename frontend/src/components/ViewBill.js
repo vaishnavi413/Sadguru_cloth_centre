@@ -90,6 +90,7 @@ const ViewBill = () => {
     <div className="amazon-billing-container">
       <div className="actions-bar no-print">
         <button className="amz-btn-primary" onClick={() => navigate("/")}>← Back to Home</button>
+        <button className="amz-btn-secondary" onClick={() => navigate("/", { state: { editBill: bill } })}>Edit Bill</button>
         <button className="amz-btn-print" onClick={() => window.print()}>Print This Bill</button>
       </div>
 

@@ -1,40 +1,51 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import "../components/InvoiceGenerator.css";
 import logo from "../assets/sadguru_logo_new.png";
 import qrCode from "../assets/qr_code.jpg";
-import { createInvoice, fetchInvoices } from "../api/invoiceApi";
+import { createInvoice, fetchInvoices, updateInvoice } from "../api/invoiceApi";
 
 const InvoiceGenerator = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const editBill = location.state?.editBill || null;
 
   useEffect(() => {
-    const fetchNextNo = async () => {
-      try {
-        const invoices = await fetchInvoices();
-        if (invoices && invoices.length > 0) {
-          const maxNo = Math.max(...invoices.map(inv => inv.invoiceNo || 0));
-          setInvoiceNo(maxNo + 1);
-        } else {
-          setInvoiceNo(1);
+    if (!editBill) {
+      const fetchNextNo = async () => {
+        try {
+          const invoices = await fetchInvoices();
+          if (invoices && invoices.length > 0) {
+            const maxNo = Math.max(...invoices.map(inv => inv.invoiceNo || 0));
+            setInvoiceNo(maxNo + 1);
+          } else {
+            setInvoiceNo(1);
+          }
+        } catch (err) {
+          console.error("Failed to fetch invoices", err);
         }
-      } catch (err) {
-        console.error("Failed to fetch invoices", err);
-      }
-    };
-    fetchNextNo();
-  }, []);
+      };
+      fetchNextNo();
+    }
+  }, [editBill]);
 
-  const [invoiceNo, setInvoiceNo] = useState(1);
-  const [invoiceDate, setInvoiceDate] = useState("");
+  const [invoiceNo, setInvoiceNo] = useState(editBill ? editBill.invoiceNo : 1);
+  
+  const formatEditDate = (d) => {
+    if (!d) return "";
+    if (d.includes("/")) return "";
+    return d;
+  };
+  
+  const [invoiceDate, setInvoiceDate] = useState(editBill ? formatEditDate(editBill.invoiceDate) : "");
   const [dueDate, setDueDate] = useState("");
-  const [clientName, setClientName] = useState("");
-  const [clientGST, setClientGST] = useState("");
-  const [clientAddress, setClientAddress] = useState("");
-  const [placeOfSupply, setPlaceOfSupply] = useState("27-MAHARASHTRA");
-  const [gstRate, setGstRate] = useState(5);
+  const [clientName, setClientName] = useState(editBill ? editBill.clientName : "");
+  const [clientGST, setClientGST] = useState(editBill ? editBill.clientGST : "");
+  const [clientAddress, setClientAddress] = useState(editBill ? editBill.clientAddress : "");
+  const [placeOfSupply, setPlaceOfSupply] = useState(editBill ? (editBill.placeOfSupply || "27-MAHARASHTRA") : "27-MAHARASHTRA");
+  const [gstRate, setGstRate] = useState(editBill ? (editBill.gstRate || 5) : 5);
 
-  const [items, setItems] = useState([
+  const [items, setItems] = useState(editBill ? editBill.items : [
     { id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }
   ]);
 
@@ -91,24 +102,38 @@ const InvoiceGenerator = () => {
 
     // Save to Local Storage (Backup)
     const savedBills = JSON.parse(localStorage.getItem("bills")) || [];
-    savedBills.push(billData);
+    if (editBill) {
+      const idx = savedBills.findIndex(b => b.invoiceNo === editBill.invoiceNo);
+      if (idx !== -1) savedBills[idx] = billData;
+    } else {
+      savedBills.push(billData);
+    }
     localStorage.setItem("bills", JSON.stringify(savedBills));
 
     // Save to MongoDB via API
     try {
-      await createInvoice(billData);
-      alert("Bill saved successfully to MongoDB!");
+      if (editBill && editBill._id) {
+        await updateInvoice(editBill._id, billData);
+        alert("Bill updated successfully!");
+        navigate("/previous-bills");
+        return;
+      } else {
+        await createInvoice(billData);
+        alert("Bill saved successfully to MongoDB!");
+      }
     } catch (err) {
       console.error("API Save failed", err);
       alert("Bill saved locally, but failed to sync for now.");
     }
 
-    setInvoiceNo(invoiceNo + 1);
-    setItems([{ id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }]);
-    setClientName("");
-    setClientGST("");
-    setClientAddress("");
-    setInvoiceDate("");
+    if (!editBill) {
+      setInvoiceNo(invoiceNo + 1);
+      setItems([{ id: 1, particulars: "", hsn: "", qty: "", rate: "", amount: 0 }]);
+      setClientName("");
+      setClientGST("");
+      setClientAddress("");
+      setInvoiceDate("");
+    }
   };
 
   const numberToWords = (num) => {

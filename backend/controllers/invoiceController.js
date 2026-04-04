@@ -56,3 +56,17 @@ export const deleteInvoice = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// Update Invoice
+export const updateInvoice = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedInvoice = await Invoice.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updatedInvoice) {
+      return res.status(404).json({ message: "Invoice not found" });
+    }
+    res.json(updatedInvoice);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
