@@ -282,8 +282,8 @@ const InvoiceGenerator = () => {
                       style={{ width: '50px', border: 'none', background: 'transparent', fontSize: '12px' }}
                     />
                   </td>
-                  <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
                   <td><input type="number" value={item.qty} onChange={(e) => handleItemChange(index, "qty", e.target.value)} /></td>
+                  <td><input type="number" value={item.rate} onChange={(e) => handleItemChange(index, "rate", e.target.value)} /></td>
                   <td>₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                   <td colSpan="2">₹{(item.amount * (gstRate / 100)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                   <td>₹{(item.amount * (1 + gstRate / 100)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>

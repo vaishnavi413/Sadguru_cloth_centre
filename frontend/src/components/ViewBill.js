@@ -146,8 +146,8 @@ const ViewBill = () => {
                 <th style={{width: '40px'}}>#</th>
                 <th>Item Description</th>
                 <th>HSN</th>
-                <th>Rate/Item</th>
                 <th>Qty</th>
+                <th>Rate/Item</th>
                 <th>Taxable Value</th>
                 <th colSpan="2">Tax Amount</th>
                 <th>Amount</th>
@@ -161,8 +161,8 @@ const ViewBill = () => {
                     <p style={{fontWeight: 'bold', margin: '0 0 5px 0'}}>{item.particulars}</p>
                   </td>
                   <td>{item.hsn || "--"}</td>
-                  <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>{item.qty}</td>
+                  <td>₹{parseFloat(item.rate).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>₹{item.amount.toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td colSpan="2">₹{(item.amount * (bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>
                   <td>₹{(item.amount * (1 + bill.gstRate / 100)).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>

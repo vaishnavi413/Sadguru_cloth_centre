@@ -314,13 +314,17 @@ body {
 
 /* Footer & Signatory */
 .amz-footer {
-    padding-top: 20px;
+    padding-top: 5px;
+}
+
+.amz-footer p {
+    margin: 2px 0;
 }
 
 .footer-top {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
 }
 
 .bank-info-qr {
@@ -330,10 +334,10 @@ body {
 
 .card-title {
     font-weight: bold;
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
     color: #999;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .bank-card p {
@@ -359,9 +363,9 @@ body {
 
 .sign-stamp {
     width: 200px;
-    height: 80px;
+    height: 40px;
     border-bottom: 1px solid #444;
-    margin: 10px auto;
+    margin: 2px auto;
 }
 
 .auth-sign { font-weight: bold; font-size: 12px; color: #666; }
@@ -369,9 +373,9 @@ body {
 .terms-notes {
     font-size: 12px;
     color: #777;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     border-top: 1px solid #eee;
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 .terms-notes ol {
